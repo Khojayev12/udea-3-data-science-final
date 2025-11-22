@@ -18,6 +18,13 @@ def get_job_salary(soup):
         text = title.get_text() 
     return text
 
+def get_job_location(soup):
+    locations = soup.select("span[data-qa='vacancy-view-raw-address']")
+    text = "None"
+    for location in locations:
+        text = location.get_text() 
+    return text
+
 
 # get html from the response
 def get_html(url):      
@@ -121,10 +128,11 @@ def parse_offers(links):
         soup = BeautifulSoup(html, 'lxml')
         title = get_job_title(soup)
         salary = get_job_salary(soup)
+        location = get_job_location(soup)
         skill_dict = parse_skills_in_offer(soup)
         description_dict = parse_description_in_offer(soup)
         with open('job_list.txt', 'a', encoding='utf-8') as f:
-            f.write(f"Title: {title} | Salary: {salary} | Skills: {skill_dict} | Deskcription: {description_dict}\n")
+            f.write(f"Title: {title} | Salary: {salary} | Skills: {skill_dict} | Location: {location} | Deskcription: {description_dict}\n")
 
 
 if __name__ == '__main__':
