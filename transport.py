@@ -1,7 +1,7 @@
 import requests
 from collections import defaultdict
 
-API_KEY = "YOUR_API_KEY"
+API_KEY = "AIzaSyA3runJi0uovu7bEOL7E2HytrXXuHFqvOk"
 
 TASHKENT_LOCATION = "41.311081,69.240562"
 TASHKENT_RADIUS_METERS = 30000
@@ -36,7 +36,7 @@ def get_bus_stops():
         "key": API_KEY,
         "location": TASHKENT_LOCATION,
         "radius": TASHKENT_RADIUS_METERS,
-        "keyword": "bus stop",
+        "keyword": "avtobus bekat",
         "type": "bus_station"
     }
 
