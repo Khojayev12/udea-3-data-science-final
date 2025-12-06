@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 
 @dataclass
-class URLBuilder:
+class OLX_URLBuilder:
     """Dataclass for building URL for OLX search query."""
     item_query: str
     city: str = None

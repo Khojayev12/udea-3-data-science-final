@@ -11,39 +11,15 @@ import aiohttp
 import asyncio
 import re
 
-from url_builder import URLBuilder
+from olx_url_builder import OLX_URLBuilder
 
 import locale
 import re
 
 
-def format_price(price: str) -> int:
-    """
-    Returns price as integer. Removes all non-digit characters.
-    :param price: price string
-    :return: formatted price
-    """
-    price = price.replace("do negocjacji", "").strip()
-    price = re.sub(r'\D', '', price)
-    return int(price) if price else 0
 
-
-def format_location_date(location_date: str) -> tuple[str, str]:
-    """
-    Returns location and date from location_date string. Formats date to polish format.
-    :param location_date: location and date string
-    :return: formatted location and date
-    """
-    location, date = location_date.split(" - ")[:2]
-    if "dzisiaj" in date.lower():
-        locale.setlocale(locale.LC_ALL, 'pl_PL')
-        formatted_date = datetime.datetime.now().strftime("%d %B %Y")
-        date = formatted_date
-    return location, date
-
-
-class Scraper:
-    def __init__(self, url_strings: list[URLBuilder], page_limit: int) -> None:
+class OLX_Scraper:
+    def __init__(self, url_strings: list[OLX_URLBuilder], page_limit: int) -> None:
         """
         Scraper class for scraping data from OLX.
         :param url_strings: List of URLBuilder objects for scraping data.
@@ -58,13 +34,36 @@ class Scraper:
         self.scraping_history = self.load_scraping_history()
         self.last_scrape_date = datetime.fromisoformat(self.scraping_history[-1]['scrape_date']) if self.scraping_history else None
 
-    def add_url(self, url: URLBuilder) -> None:
+    def add_url(self, url: OLX_URLBuilder) -> None:
         """
         Adds a URLBuilder object to the list of URLs to scrape.
         :param url: URLBuilder object to add.
         :return:
         """
         self.url_list.append(url)
+    def format_price(price: str) -> int:
+        """
+        Returns price as integer. Removes all non-digit characters.
+        :param price: price string
+        :return: formatted price
+        """
+        price = price.replace("do negocjacji", "").strip()
+        price = re.sub(r'\D', '', price)
+        return int(price) if price else 0
+
+
+    def format_location_date(location_date: str) -> tuple[str, str]:
+        """
+        Returns location and date from location_date string. Formats date to polish format.
+        :param location_date: location and date string
+        :return: formatted location and date
+        """
+        location, date = location_date.split(" - ")[:2]
+        if "dzisiaj" in date.lower():
+            locale.setlocale(locale.LC_ALL, 'pl_PL')
+            formatted_date = datetime.datetime.now().strftime("%d %B %Y")
+            date = formatted_date
+        return location, date
 
     async def scrape_data(self, progress_callback: Callable[[int], None] = None) -> dict[str, pd.DataFrame]:
         """
@@ -91,7 +90,7 @@ class Scraper:
         self.save_scrape_date()
         return self.data_frames
 
-    async def _fetch_data_from_url(self, url_builder: URLBuilder) -> pd.DataFrame:
+    async def _fetch_data_from_url(self, url_builder: OLX_URLBuilder) -> pd.DataFrame:
         """
         Fetches data from the given URL.
         :param url_builder: URLBuilder object to fetch data from.
@@ -121,7 +120,7 @@ class Scraper:
             return pd.DataFrame(self._process_item(item) for item in all_items) if all_items else pd.DataFrame()
 
     @staticmethod
-    def _process_item(item: bs4.element.Tag) -> dict:
+    def _process_item(self, item: bs4.element.Tag) -> dict:
         """
         Processes an item from the scraped data.
         :param item: Item to process.
@@ -131,7 +130,7 @@ class Scraper:
             title = item.find("h4").text.strip()
             #price = format_price(item.find("p").text)  ad-price
             price = item.find("p", {"data-testid": "ad-price"}).text.strip()
-            location, date = format_location_date(item.find("p", {"data-testid": "location-date"}).text) if item.find("p",
+            location, date = self.format_location_date(item.find("p", {"data-testid": "location-date"}).text) if item.find("p",
                 {"data-testid": "location-date"}) else ("", "")
             photo = item.find("img").get("src") if item.find("img") else ""
             item_url = urljoin("https://www.olx.uz", item.find("a").get("href"))
@@ -200,16 +199,16 @@ class Scraper:
         :param config: Configuration dictionary.
         :return:
         """
-        self.url_list = [URLBuilder(**query) for query in config['search_queries']]
+        self.url_list = [OLX_URLBuilder(**query) for query in config['search_queries']]
 
 
 async def main():
     search_items = [
-        URLBuilder(**query) 
+        OLX_URLBuilder(**query) 
         for query in [{"item_query": "2 xonali kvartira arenda", "city": "tashkent", "distance": "30"}]
     ]
 
-    olx_scrapper = Scraper(search_items, 15)
+    olx_scrapper = OLX_Scraper(search_items, 15)
     result = await olx_scrapper.scrape_data()
     #print(olx_scrapper.data_frames)
     print(result["2 xonali kvartira arenda - Tashkent - 30km"])
