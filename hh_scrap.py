@@ -6,21 +6,21 @@ import time
 class HH_Scraper():
     def __init__(self):
         pass
-    def get_job_title(soup):
+    def get_job_title(self, soup):
         titles = soup.select("h1[data-qa='vacancy-title']")
         text = "None"
         for title in titles:
             text = title.get_text()
         return text
 
-    def get_job_salary(soup):
+    def get_job_salary(self, soup):
         salarys = soup.select("span[data-qa='vacancy-salary-compensation-type-gross']")
         text = "None"
         for title in salarys:
             text = title.get_text() 
         return text
 
-    def get_job_location(soup):
+    def get_job_location(self, soup):
         locations = soup.select("span[data-qa='vacancy-view-raw-address']")
         text = "None"
         for location in locations:
@@ -29,7 +29,7 @@ class HH_Scraper():
 
 
     # get html from the response
-    def get_html(url):      
+    def get_html(self, url):      
         headers = {'User-Agent': 'Chrome/142.0.7444.164'}
         rq = requests.get(url, headers=headers)
         print('Getting HTML-code from ', url)
@@ -37,7 +37,7 @@ class HH_Scraper():
 
 
     # check if vacansy exists
-    def is_empty(html):
+    def is_empty(self, html):
         soup = BeautifulSoup(html, 'lxml')
         links = links = soup.select("a[data-qa='serp-item__title']")
         if links == []:
@@ -72,7 +72,7 @@ class HH_Scraper():
 
     # функция, которая собирает все ссылки на вакансии на странице поиска
     # принимает список, который уже может быть не пустой, возвращает дополненный список
-    def get_offers_links(html, all_links):
+    def get_offers_links(self, html, all_links):
         soup = BeautifulSoup(html, 'lxml')
         links = soup.select("a[data-qa='serp-item__title']")
     
@@ -83,14 +83,14 @@ class HH_Scraper():
 
 
     # функция, которая парсит блок с ключевыми навыками и возвращает дополненный словарь, который ей дали на входе
-    def parse_skills_in_offer(soup):
+    def parse_skills_in_offer(self, soup):
         key_skills = soup.select("li[data-qa='skills-element']")
         skills_list = ','.join(''.join(element.find_all(text=True)) for element in key_skills)
         return skills_list
 
 
     # функция, которая парсит блок с описанием вакансии и возвращает дополненный словарь, который ей дали на входе
-    def parse_description_in_offer(soup):
+    def parse_description_in_offer(self, soup):
         # описание вакансии
         if not soup.find(string="Вакансия в архиве"):
             #description = soup.find('div', class_='vacancy-description')
@@ -122,16 +122,28 @@ class HH_Scraper():
 
 
     def parse_offers(self, links):
+        raw_rows = []
         skill_dict = {}
         description_dict = {}
         for link in links:
             html = self.get_html(link)
-            time.sleep(.3)
+            time.sleep(0.3)
             soup = BeautifulSoup(html, 'lxml')
             title = self.get_job_title(soup)
             salary = self.get_job_salary(soup)
             location = self.get_job_location(soup)
             skill_dict = self.parse_skills_in_offer(soup)
             description_dict = self.parse_description_in_offer(soup)
+
             with open('job_list.txt', 'a', encoding='utf-8') as f:
                 f.write(f"Title: {title} | Salary: {salary} | Skills: {skill_dict} | Location: {location} | Deskcription: {description_dict}\n")
+            raw_single_row = {
+                "Title": title,
+                "Salary": salary,
+                "Skills": skill_dict,
+                "Location": location,
+                "Deskcription": description_dict
+            }
+        raw_rows.append(raw_single_row)
+        result_df = pd.DataFrame(raw_rows)
+        return result_df

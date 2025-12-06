@@ -116,8 +116,7 @@ class OLX_Scraper:
                         print("next page: ", page)
                     else:
                         raise Exception(f"Error: {response.status} for {site_url.geturl()}")
-
-            return pd.DataFrame(self._process_item(item) for item in all_items) if all_items else pd.DataFrame()
+            return pd.DataFrame(self._process_item(self, item) for item in all_items) if all_items else pd.DataFrame()
 
     @staticmethod
     def _process_item(self, item: bs4.element.Tag) -> dict:
