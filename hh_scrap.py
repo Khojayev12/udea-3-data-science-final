@@ -135,8 +135,8 @@ class HH_Scraper():
             skill_dict = self.parse_skills_in_offer(soup)
             description_dict = self.parse_description_in_offer(soup)
 
-            with open('job_list.txt', 'a', encoding='utf-8') as f:
-                f.write(f"Title: {title} | Salary: {salary} | Skills: {skill_dict} | Location: {location} | Deskcription: {description_dict}\n")
+            # with open('job_list.txt', 'a', encoding='utf-8') as f:
+            #     f.write(f"Title: {title} | Salary: {salary} | Skills: {skill_dict} | Location: {location} | Deskcription: {description_dict}\n")
             raw_single_row = {
                 "Title": title,
                 "Salary": salary,
@@ -144,6 +144,6 @@ class HH_Scraper():
                 "Location": location,
                 "Deskcription": description_dict
             }
-        raw_rows.append(raw_single_row)
+            raw_rows.append(raw_single_row)
         result_df = pd.DataFrame(raw_rows)
         return result_df

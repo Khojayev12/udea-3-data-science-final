@@ -41,7 +41,7 @@ class OLX_Scraper:
         :return:
         """
         self.url_list.append(url)
-    def format_price(price: str) -> int:
+    def format_price(self, price: str) -> int:
         """
         Returns price as integer. Removes all non-digit characters.
         :param price: price string
@@ -52,7 +52,7 @@ class OLX_Scraper:
         return int(price) if price else 0
 
 
-    def format_location_date(location_date: str) -> tuple[str, str]:
+    def format_location_date(self, location_date: str) -> tuple[str, str]:
         """
         Returns location and date from location_date string. Formats date to polish format.
         :param location_date: location and date string
@@ -137,6 +137,7 @@ class OLX_Scraper:
             return {"Title": title, "Price": price, "Location": location, "Date": date, "Item URL": item_url,
                     "Photo": photo}
         except Exception as e:
+            print(e)
             return {"Title": None, "Price": None, "Location": None, "Date": None, "Item URL": None,
                     "Photo": None}
 
