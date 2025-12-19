@@ -1,3 +1,4 @@
+# Helpers for enriching transport data with districts using Geoapify geocoding.
 import pandas as pd
 import requests
 from requests.structures import CaseInsensitiveDict
@@ -12,6 +13,7 @@ class TransportScrap:
             self.data = json.load(f)
 
     def get_district_from_autocomplete(self, address, lang="en"):
+        # Lightweight autocomplete lookup used as a fallback when full geocode search misses.
         url = f"https://api.geoapify.com/v1/geocode/autocomplete?text={address}&type=amenity&limit=5&lang={lang}&filter=countrycode%3Auz&format=json&apiKey=4cd051c02aab4d0898bbdc68355a9e62"
 
         headers = CaseInsensitiveDict()
@@ -28,6 +30,7 @@ class TransportScrap:
             return None
         if not tash_in_address:
             address = address + ", Tashkent"
+        # Primary geocode lookup constrained to Uzbekistan; limited to Tashkent city results.
         url = f"https://api.geoapify.com/v1/geocode/search?lang={lang}&filter=countrycode:uz&text={address}&apiKey=4cd051c02aab4d0898bbdc68355a9e62"
         headers = CaseInsensitiveDict()
         headers["Accept"] = "application/json"
@@ -39,12 +42,13 @@ class TransportScrap:
                     result = re.sub(r'\bdistrict\b', '', row["properties"]["county"], flags=re.IGNORECASE).strip()
                     return result
             if not resp["features"]:
-                result = self.get_district_from_autocomplete(address)
+                result = self.get_district_from_autocomplete(address)  # fallback to autocomplete when geocode is empty
                 if result:
                     result = re.sub(r'\bdistrict\b', '', result, flags=re.IGNORECASE).strip()
                     return result
                 return None
         except Exception as e:
+            # As a last resort, attempt autocomplete; safe to return None if that fails too.
             result = self.get_district_from_autocomplete(address)
             if result:
                 result = re.sub(r'\bdistrict\b', '', result, flags=re.IGNORECASE).strip()
@@ -69,7 +73,6 @@ class TransportScrap:
     def get_location_for_job(self, input_df, location_col):
         input_df["District"] = input_df[location_col].apply(self.get_district_hh)
         return input_df
-
 
 
 

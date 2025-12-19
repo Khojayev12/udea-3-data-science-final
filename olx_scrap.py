@@ -1,3 +1,4 @@
+# Async scraper for OLX listings (housing focus), with helpers for parsing listing cards.
 import json
 import os
 from datetime import datetime
@@ -108,8 +109,9 @@ class OLX_Scraper:
                         all_items.extend(items)
                         count = self.find_count(soup)
 
+                        # Stop when we hit the configured page cap or have collected the advertised total.
                         if page >= self.page_limit or len(all_items) >= count:
-                            break  # Break if there are no more pages
+                            break
                         page += 1
                     else:
                         raise Exception(f"Error: {response.status} for {site_url.geturl()}")

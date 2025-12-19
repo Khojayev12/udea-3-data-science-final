@@ -4,6 +4,7 @@ from typing import Optional
 import pandas as pd
 
 
+# Normalizes OLX prices and HH salaries into USD (after tax) for downstream analysis.
 class PriceConverter:
     def __init__(self, hh_df: pd.DataFrame, olx_df: pd.DataFrame):
         # Default conversion rate (UZS per 1 USD). Update if you need a newer rate.
@@ -101,4 +102,3 @@ class PriceConverter:
 
     def get_hh_data(self) -> pd.DataFrame:
         return self.convert_hh_salaries()
-
