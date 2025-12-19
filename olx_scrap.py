@@ -4,8 +4,9 @@ from datetime import datetime
 from typing import Union, Callable
 from urllib.parse import urlparse, urljoin
 
-import bs4.element
+
 from bs4 import BeautifulSoup
+import bs4.element
 import pandas as pd
 import aiohttp
 import asyncio

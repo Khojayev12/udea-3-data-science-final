@@ -3,7 +3,8 @@
 
 import requests
 
-def get_district_from_yandex(address: str, api_key: str):
+
+def get_district_from_yandex(address: str, api_key: str, lang: str) -> str:
     """
     Returns the district (Administrative Area Level 2) for a given address
     using Yandex Geocoder API.
@@ -14,12 +15,12 @@ def get_district_from_yandex(address: str, api_key: str):
         "apikey": api_key,
         "geocode": address,
         "format": "json",
-        "lang": "uz_UZ"  # use Uzbek language
+        "lang": lang  # use Uzbek language
     }
 
     response = requests.get(url, params=params)
     data = response.json()
-    #print(data)
+    print(data)
 
     try:
         components = (
@@ -42,18 +43,18 @@ def get_district_from_yandex(address: str, api_key: str):
 # -------------------------
 # USAGE EXAMPLE
 # -------------------------
-YANDEX_API_KEY = "55277417-19a9-49ce-aa58-4e5a3941417f"
+YANDEX_API_KEY = "52c8a43d-ba13-4ef4-a12e-c1d64369d148"
 
 address = "Sputnik 16A 17 Toshkent"
 
-district = get_district_from_yandex(address, YANDEX_API_KEY)
+district = get_district_from_yandex(address, YANDEX_API_KEY, "uz_UZ")
 print("District:", district)
 
 address = "Boshliq mavzesi, Tashkent"
 
-district = get_district_from_yandex(address, YANDEX_API_KEY)
+district = get_district_from_yandex(address, YANDEX_API_KEY, "uz_UZ")
 print("District:", district)
 
-address = "Qo‘yliq 1-mavzesi, Tashkent"
-district = get_district_from_yandex(address, YANDEX_API_KEY)
+address = "Ташкент, улица Муминова, 11"
+district = get_district_from_yandex(address, YANDEX_API_KEY, "ru_RU")
 print("District:", district)
