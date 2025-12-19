@@ -4,7 +4,6 @@ from datetime import datetime
 from typing import Union, Callable
 from urllib.parse import urlparse, urljoin
 
-
 from bs4 import BeautifulSoup
 import bs4.element
 import pandas as pd
@@ -16,7 +15,6 @@ from olx_url_builder import OLX_URLBuilder
 
 import locale
 import re
-
 
 
 class OLX_Scraper:
@@ -33,7 +31,8 @@ class OLX_Scraper:
         self.listings_counts = []
         self.resources_dir = os.path.join(os.path.dirname(__file__), '../Resources')
         self.scraping_history = self.load_scraping_history()
-        self.last_scrape_date = datetime.fromisoformat(self.scraping_history[-1]['scrape_date']) if self.scraping_history else None
+        self.last_scrape_date = datetime.fromisoformat(
+            self.scraping_history[-1]['scrape_date']) if self.scraping_history else None
 
     def add_url(self, url: OLX_URLBuilder) -> None:
         """
@@ -42,6 +41,7 @@ class OLX_Scraper:
         :return:
         """
         self.url_list.append(url)
+
     def format_price(self, price: str) -> int:
         """
         Returns price as integer. Removes all non-digit characters.
@@ -51,7 +51,6 @@ class OLX_Scraper:
         price = price.replace("do negocjacji", "").strip()
         price = re.sub(r'\D', '', price)
         return int(price) if price else 0
-
 
     def format_location_date(self, location_date: str) -> tuple[str, str]:
         """
@@ -109,12 +108,9 @@ class OLX_Scraper:
                         all_items.extend(items)
                         count = self.find_count(soup)
 
-                        #print(pd.DataFrame(self._process_item(item) for item in all_items) if all_items else pd.DataFrame())
                         if page >= self.page_limit or len(all_items) >= count:
-                            print("braking while loop")
                             break  # Break if there are no more pages
                         page += 1
-                        print("next page: ", page)
                     else:
                         raise Exception(f"Error: {response.status} for {site_url.geturl()}")
             return pd.DataFrame(self._process_item(self, item) for item in all_items) if all_items else pd.DataFrame()
@@ -128,13 +124,14 @@ class OLX_Scraper:
         """
         try:
             title = item.find("h4").text.strip()
-            #price = format_price(item.find("p").text)  ad-price
             price = item.find("p", {"data-testid": "ad-price"}).text.strip()
-            location, date = self.format_location_date(item.find("p", {"data-testid": "location-date"}).text) if item.find("p",
-                {"data-testid": "location-date"}) else ("", "")
+            location, date = self.format_location_date(
+                item.find("p", {"data-testid": "location-date"}).text) if item.find("p",
+                                                                                    {
+                                                                                        "data-testid": "location-date"}) else (
+                "", "")
             photo = item.find("img").get("src") if item.find("img") else ""
             item_url = urljoin("https://www.olx.uz", item.find("a").get("href"))
-            #print("Title: ", title, "Price:", price, "Location: ", location, "Date: ", date, "Item URL: ", item_url, "Photo: ", photo)
             return {"Title": title, "Price": price, "Location": location, "Date": date, "Item URL": item_url,
                     "Photo": photo}
         except Exception as e:
@@ -201,26 +198,3 @@ class OLX_Scraper:
         :return:
         """
         self.url_list = [OLX_URLBuilder(**query) for query in config['search_queries']]
-
-
-async def main():
-    search_items = [
-        OLX_URLBuilder(**query) 
-        for query in [{"item_query": "2 xonali kvartira arenda", "city": "tashkent", "distance": "30"}]
-    ]
-
-    olx_scrapper = OLX_Scraper(search_items, 15)
-    result = await olx_scrapper.scrape_data()
-    #print(olx_scrapper.data_frames)
-    print(result["2 xonali kvartira arenda - Tashkent - 30km"])
-    result["2 xonali kvartira arenda - Tashkent - 30km"].to_excel("rent_data.xlsx", sheet_name="OLX_Data", index=False)
-
-
-if __name__ == "__main__":
-    asyncio.run(main())
-
-
-
-
-# https://www.olx.uz/tashkent/q-2-xonali-kvartira/?search%5Bdist%5D=30&search%5Border%5D=created_at:desc
-# https://www.olx.uz/toshkent/q-2-xonali-kvartira/?search%5Bdist%5D=30&search%5Border%5D=created_at:desc

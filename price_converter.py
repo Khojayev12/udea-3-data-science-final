@@ -1,5 +1,4 @@
 import re
-from pathlib import Path
 from typing import Optional
 
 import pandas as pd
@@ -44,8 +43,7 @@ class PriceConverter:
             return None
         return int(round(sum(cleaned) / len(cleaned)))
 
-    def salary_to_usd_after_tax(self, value) -> Optional[
-        int]:
+    def salary_to_usd_after_tax(self, value) -> Optional[int]:
         """
         Convert HH salary text to USD after tax as an integer.
         - Detects currency by '$' (USD) vs 'so'm/сум' (UZS assumed).
